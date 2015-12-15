@@ -1,0 +1,68 @@
+#include <cstdlib>
+#include <iostream>
+#include <opencv/highgui.h>
+#include <opencv/cxcore.h>
+#include <opencv/cv.h>
+
+using namespace cv;
+using namespace std;
+
+int main(int argc , char *argv)
+{
+	cout<<"0";
+	IplImage* img;
+	//IplImage* pGrayImg;
+        IplImage* img_2;
+
+	img=cvLoadImage("test_1.png", 1);
+	img_2=cvLoadImage("test_2.png",1);	
+		
+
+	Mat backgroundImage=imread("test_1.png",0);
+	Mat currentImage=imread("test_2.png",0);
+
+	cvNamedWindow("Source Image",0);
+	cvNamedWindow("Diff Image",0);
+//different	
+    Mat diffImage;
+    absdiff(backgroundImage, currentImage, diffImage);
+
+    Mat foregroundMask = cv::Mat::zeros(diffImage.rows, diffImage.cols, CV_8UC1);
+
+    float threshold = 30.0f;
+    float dist;
+
+    for(int j=0; j<diffImage.rows; ++j)
+        for(int i=0; i<diffImage.cols; ++i)
+        {
+            cv::Vec3b pix = diffImage.at<cv::Vec3b>(j,i);
+
+            dist = (pix[0]*pix[0] + pix[1]*pix[1] + pix[2]*pix[2]);
+            dist = sqrt(dist);
+
+            if(dist>threshold)
+            {
+                foregroundMask.at<unsigned char>(j,i) = 255;
+            }
+        }
+	
+    IplImage copy=diffImage;
+    IplImage* result=&copy;
+//end different
+
+	cvShowImage("Source Image",img_2);
+	cvShowImage("Diff Image", result);
+	
+	cvWaitKey(0);
+	
+	cvDestroyWindow("Source Image");
+	cvDestroyWindow("Diff Image");
+	
+	cvReleaseImage(&img);
+	cvReleaseImage(&img_2);
+	cvReleaseImage(&result);
+	return 0;
+
+
+}
+
